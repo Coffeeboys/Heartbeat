@@ -45,7 +45,10 @@ public class FrameAnalyzer implements Camera.PreviewCallback {
                 currentArrayCount++;
             }
         }
-        movingAverage = currentArrayAverage/currentArrayCount;
+        if (currentArrayCount > 0 ){
+            movingAverage = currentArrayAverage/currentArrayCount;
+
+        }
 
         //Calculate average of new image
         long byteTotal = 0;
@@ -57,6 +60,7 @@ public class FrameAnalyzer implements Camera.PreviewCallback {
 
         boolean newBeatState = beatState;
         if (nextAverage < movingAverage) {
+            pulseCallback.onPulse();
             newBeatState = true;
         }
         else {
