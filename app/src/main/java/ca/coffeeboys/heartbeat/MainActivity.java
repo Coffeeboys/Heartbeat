@@ -38,8 +38,8 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 db.child("Beat").setValue(Calendar.getInstance().getTimeInMillis());
 //                Snackbar.make(view, "Send data", Snackbar.LENGTH_LONG).show();
-                Vibrator mVibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-                mVibrator.vibrate(100);
+//                Vibrator mVibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+//                mVibrator.vibrate(100);
             }
         });
     }
@@ -49,6 +49,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Snackbar.make(view, "Received beat", Snackbar.LENGTH_LONG).show();
+                Vibrator mVibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+                mVibrator.vibrate(100);
             }
 
             @Override
