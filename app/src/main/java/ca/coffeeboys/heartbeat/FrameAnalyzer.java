@@ -14,7 +14,7 @@ public class FrameAnalyzer implements Camera.PreviewCallback {
     private boolean beatState;
     private long[] movingAverageArray;
     private int movingAverageIndex;
-    private int averageArraySize = 10;
+    private int averageArraySize = 3;
     private PulseCallback pulseCallback;
 
 
@@ -53,12 +53,13 @@ public class FrameAnalyzer implements Camera.PreviewCallback {
         //Calculate average of new image
         long byteTotal = 0;
         for (byte aData : data) {
-            byteTotal += (long) (aData * aData);
+            //byteTotal += (long) (aData * aData);
+            byteTotal += (long) aData;
         }
         nextAverage = byteTotal/data.length;
 
 
-        boolean newBeatState = beatState;
+        boolean newBeatState = false;
         if (nextAverage < movingAverage) {
             pulseCallback.onPulse();
             newBeatState = true;
