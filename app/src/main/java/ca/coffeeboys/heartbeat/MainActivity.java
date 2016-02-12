@@ -1,5 +1,7 @@
 package ca.coffeeboys.heartbeat;
 
+import android.animation.AnimatorInflater;
+import android.animation.AnimatorSet;
 import android.content.Context;
 import android.hardware.Camera;
 import android.os.Bundle;
@@ -27,6 +29,8 @@ public class MainActivity extends AppCompatActivity {
     private CameraPreview mPreview;
     private PulseCallback pulseCallback;
     private Camera mCamera;
+    private FloatingActionButton fab;
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,16 +44,11 @@ public class MainActivity extends AppCompatActivity {
         registerFirebaseListener(getWindow().getDecorView().getRootView());
         pulseCallback = makePulseCallback();
 
-
         //CAMERA STUFF
-        //startWatching();
 //        initCameraPreview(getCameraInstance());
 
 
-
-
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -141,12 +140,20 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onPulse() {
                 sendBeat();
+                animatePulse();
             }
         };
     }
 
     private void sendBeat() {
         db.child("Beat").setValue(Calendar.getInstance().getTimeInMillis());
+    }
+    
+    private void animatePulse() {
+        AnimatorSet set = (AnimatorSet) AnimatorInflater.loadAnimator(MainActivity.this,
+                R.animator.pulse);
+        set.setTarget(fab);
+        set.start();
     }
 
     @Override
