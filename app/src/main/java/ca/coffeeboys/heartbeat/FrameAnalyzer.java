@@ -13,13 +13,15 @@ public class FrameAnalyzer implements Camera.PreviewCallback {
     private long[] movingAverageArray;
     private int movingAverageIndex;
     private int averageArraySize = 10;
+    private PulseCallback pulseCallback;
 
 
-    public FrameAnalyzer() {
+    public FrameAnalyzer(PulseCallback callback) {
         prevAverage = 0;
         nextAverage = 0;
         movingAverageArray = new long[averageArraySize];
         movingAverageIndex = 0;
+        pulseCallback = callback;
     }
 
     @Override
@@ -33,13 +35,14 @@ public class FrameAnalyzer implements Camera.PreviewCallback {
         movingAverageIndex = (movingAverageIndex + 1) % averageArraySize;
 
         nextAverage = 0;
-        for (Long currentAverage: movingAverageArray) {
+        for (Long currentAverage : movingAverageArray) {
             nextAverage += currentAverage;
         }
-        nextAverage = nextAverage/averageArraySize;
+        nextAverage = nextAverage / averageArraySize;
 
-        if ((Math.abs(nextAverage- prevAverage) > 40) && (Math.abs(nextAverage- prevAverage) < 200))  {
+        if ((Math.abs(nextAverage - prevAverage) > 37) && (Math.abs(nextAverage - prevAverage) < 200))  {
             Log.d("FrameAnalyzer", "" + nextAverage);
+            pulseCallback.onPulse();
         }
         prevAverage = nextAverage;
     }
