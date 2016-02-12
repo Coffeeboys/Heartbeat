@@ -1,8 +1,8 @@
 package ca.coffeeboys.heartbeat;
 
+import android.animation.AnimatorInflater;
+import android.animation.AnimatorSet;
 import android.content.Context;
-import android.content.pm.ActivityInfo;
-import android.graphics.ImageFormat;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.os.Vibrator;
@@ -46,14 +46,17 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 db.child("Beat").setValue(Calendar.getInstance().getTimeInMillis());
-//                Snackbar.make(view, "Send data", Snackbar.LENGTH_LONG).show();
-//                Vibrator mVibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-//                mVibrator.vibrate(100);
+                AnimatorSet set = (AnimatorSet) AnimatorInflater.loadAnimator(MainActivity.this,
+                        R.animator.pulse);
+                set.setTarget(fab);
+                set.start();
+//                Animation pulse = AnimationUtils.loadAnimation(MainActivity.this, R.anim.pulse_tween);
+//                fab.startAnimation(pulse);
             }
         });
     }
