@@ -1,6 +1,8 @@
 package ca.coffeeboys.heartbeat;
 
 import android.content.Context;
+import android.content.pm.ActivityInfo;
+import android.hardware.Camera;
 import android.os.Bundle;
 import android.os.Vibrator;
 import android.support.design.widget.FloatingActionButton;
@@ -10,6 +12,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.FrameLayout;
 
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
@@ -20,7 +23,7 @@ import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity {
     Firebase db;
-
+    private CameraPreview mPreview;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -28,9 +31,19 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        setupFirebase(getApplicationContext());
 
+        //SERVER STUFF
+        setupFirebase(getApplicationContext());
         registerFirebaseListener(getWindow().getDecorView().getRootView());
+
+
+        //CAMERA STUFF
+        //startWatching();
+        initCameraPreview(getCameraInstance());
+
+
+
+
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -42,6 +55,28 @@ public class MainActivity extends AppCompatActivity {
 //                mVibrator.vibrate(100);
             }
         });
+    }
+
+    public static Camera getCameraInstance() {
+        Camera camera = null;
+        try {
+            camera = Camera.open();
+            camera.setPreviewCallback(new FrameAnalyzer());
+        }
+        catch (Exception e) {
+            //handle camera errors for non-hackathon porpoises
+        }
+        camera.setDisplayOrientation(90);
+        return camera;
+    }
+    private void initCameraPreview(Camera camera) {
+        mPreview = new CameraPreview(this, camera);
+        FrameLayout preview = (FrameLayout) findViewById(R.id.camera_frame);
+        preview.addView(mPreview);
+    }
+    private void startWatching() {
+
+
     }
 
     private void registerFirebaseListener(final View view) {

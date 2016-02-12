@@ -29,6 +29,14 @@
         android:layout_height="@dimen/button_size"
         android:layout_gravity="center"
         android:layout_margin="@dimen/fab_margin"
-        android:src="@drawable/heart_icon" />
+        android:src="@drawable/heart_icon"
+        android:longClickable="true" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/camera_frame">
+
+    </FrameLayout>
 
 </android.support.design.widget.CoordinatorLayout>
