@@ -1,8 +1,6 @@
 package ca.coffeeboys.heartbeat;
 
 import android.content.Context;
-import android.content.pm.ActivityInfo;
-import android.graphics.ImageFormat;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.os.Vibrator;
@@ -25,6 +23,7 @@ import java.util.Calendar;
 public class MainActivity extends AppCompatActivity {
     Firebase db;
     private CameraPreview mPreview;
+    private PulseCallback pulseCallback;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
         //SERVER STUFF
         setupFirebase(getApplicationContext());
         registerFirebaseListener(getWindow().getDecorView().getRootView());
+        pulseCallback = makePulseCallback();
 
 
         //CAMERA STUFF
@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                db.child("Beat").setValue(Calendar.getInstance().getTimeInMillis());
+                sendBeat();
 //                Snackbar.make(view, "Send data", Snackbar.LENGTH_LONG).show();
 //                Vibrator mVibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
 //                mVibrator.vibrate(100);
@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public static Camera getCameraInstance() {
+    public Camera getCameraInstance() {
         Camera camera = null;
         try {
             camera = Camera.open();
@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
             parameters.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
            // parameters.setPreviewFormat(ImageFormat.RGB_565);
             camera.setParameters(parameters);
-            camera.setPreviewCallback(new FrameAnalyzer());
+            camera.setPreviewCallback(new FrameAnalyzer(pulseCallback));
         }
         catch (Exception e) {
             //handle camera errors for non-hackathon porpoises
@@ -103,6 +103,19 @@ public class MainActivity extends AppCompatActivity {
     private void setupFirebase(Context applicationContext) {
         Firebase.setAndroidContext(applicationContext);
         db = new Firebase("https://hackentinesheartbeat.firebaseio.com/");
+    }
+
+    private PulseCallback makePulseCallback() {
+        return new PulseCallback() {
+            @Override
+            public void onPulse() {
+                sendBeat();
+            }
+        };
+    }
+
+    private void sendBeat() {
+        db.child("Beat").setValue(Calendar.getInstance().getTimeInMillis());
     }
 
     @Override
