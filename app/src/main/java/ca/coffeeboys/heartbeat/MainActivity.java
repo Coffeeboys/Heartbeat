@@ -37,13 +37,8 @@ public class MainActivity extends AppCompatActivity {
         setupFirebase(getApplicationContext());
         registerFirebaseListener(getWindow().getDecorView().getRootView());
 
-
         //CAMERA STUFF
-        //startWatching();
         initCameraPreview(getCameraInstance());
-
-
-
 
 
         final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -55,8 +50,6 @@ public class MainActivity extends AppCompatActivity {
                         R.animator.pulse);
                 set.setTarget(fab);
                 set.start();
-//                Animation pulse = AnimationUtils.loadAnimation(MainActivity.this, R.anim.pulse_tween);
-//                fab.startAnimation(pulse);
             }
         });
     }
@@ -81,10 +74,6 @@ public class MainActivity extends AppCompatActivity {
         mPreview = new CameraPreview(this, camera);
         FrameLayout preview = (FrameLayout) findViewById(R.id.camera_frame);
         preview.addView(mPreview);
-    }
-    private void startWatching() {
-
-
     }
 
     private void registerFirebaseListener(final View view) {
