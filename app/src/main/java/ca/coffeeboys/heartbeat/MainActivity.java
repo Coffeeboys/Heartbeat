@@ -2,6 +2,7 @@ package ca.coffeeboys.heartbeat;
 
 import android.content.Context;
 import android.content.pm.ActivityInfo;
+import android.graphics.ImageFormat;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.os.Vibrator;
@@ -61,6 +62,10 @@ public class MainActivity extends AppCompatActivity {
         Camera camera = null;
         try {
             camera = Camera.open();
+            Camera.Parameters parameters = camera.getParameters();
+            parameters.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
+           // parameters.setPreviewFormat(ImageFormat.RGB_565);
+            camera.setParameters(parameters);
             camera.setPreviewCallback(new FrameAnalyzer());
         }
         catch (Exception e) {
