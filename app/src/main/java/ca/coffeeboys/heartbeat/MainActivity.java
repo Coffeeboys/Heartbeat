@@ -1,5 +1,6 @@
 package ca.coffeeboys.heartbeat;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -9,7 +10,15 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.firebase.client.DataSnapshot;
+import com.firebase.client.Firebase;
+import com.firebase.client.FirebaseError;
+import com.firebase.client.ValueEventListener;
+
+import java.util.Calendar;
+
 public class MainActivity extends AppCompatActivity {
+    Firebase db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -18,14 +27,37 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        setupFirebase(getApplicationContext());
+
+        registerFirebaseListener(getWindow().getDecorView().getRootView());
+
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                db.child("Beat").setValue(Calendar.getInstance().getTimeInMillis());
+//                Snackbar.make(view, "Send data", Snackbar.LENGTH_LONG).show();
             }
         });
+    }
+
+    private void registerFirebaseListener(final View view) {
+        db.child("Beat").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Snackbar.make(view, "Received beat", Snackbar.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void onCancelled(FirebaseError firebaseError) {
+
+            }
+        });
+    }
+
+    private void setupFirebase(Context applicationContext) {
+        Firebase.setAndroidContext(applicationContext);
+        db = new Firebase("https://hackentinesheartbeat.firebaseio.com/");
     }
 
     @Override
