@@ -23,7 +23,7 @@ public class FrameAnalyzer implements Camera.PreviewCallback {
     private int pulseDelay = 200;
     private PulseCallback pulseCallback;
     private int nonRedCount = 100;
-    private int redThreshold = 180;
+    private int redThreshold = 150;
     private boolean redDetected = true;
 
 
@@ -77,18 +77,21 @@ public class FrameAnalyzer implements Camera.PreviewCallback {
         }*/
 
         boolean newBeatState = false;
-        if (nextAverage < movingAverage) {
-            long currentTime = Calendar.getInstance().getTimeInMillis();
-            if (currentTime - lastPulseTime > pulseDelay) {
-                pulseCallback.onPulse();
-                pulseCallback.onDataCollected((1));
-                newBeatState = true;
-                lastPulseTime = currentTime;
+        if (redDetected == true) {
+            if (nextAverage < movingAverage) {
+                long currentTime = Calendar.getInstance().getTimeInMillis();
+                if (currentTime - lastPulseTime > pulseDelay) {
+                    pulseCallback.onPulse();
+                    pulseCallback.onDataCollected((1));
+                    newBeatState = true;
+                    lastPulseTime = currentTime;
+                }
             }
-        }
-        else {
-            newBeatState = false;
-            pulseCallback.onDataCollected(0);
+            else {
+                newBeatState = false;
+                pulseCallback.onDataCollected(0);
+            }
+
         }
 
         movingAverageArray[movingAverageIndex] = nextAverage;
