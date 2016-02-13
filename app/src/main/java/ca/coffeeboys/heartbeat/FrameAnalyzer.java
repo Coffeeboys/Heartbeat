@@ -19,7 +19,9 @@ public class FrameAnalyzer implements Camera.PreviewCallback {
     private int movingAverageIndex;
     private int averageArraySize = 3;
     private long lastPulseTime;
+    private int pulseDelay = 200;
     private PulseCallback pulseCallback;
+
 
 
     public FrameAnalyzer(PulseCallback callback) {
@@ -68,7 +70,7 @@ public class FrameAnalyzer implements Camera.PreviewCallback {
         boolean newBeatState = false;
         if (nextAverage < movingAverage) {
             long currentTime = Calendar.getInstance().getTimeInMillis();
-            if (currentTime - lastPulseTime > 200) {
+            if (currentTime - lastPulseTime > pulseDelay) {
                 pulseCallback.onPulse();
                 newBeatState = true;
                 lastPulseTime = currentTime;
