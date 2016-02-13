@@ -6,13 +6,12 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
-import android.content.SharedPreferences;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.os.Vibrator;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -45,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
     private String FIREBASE_ROOT = "Channels";
     private String USERNAME_PREFERENCE = "Username";
     private ValueEventListener dbListener;
+    private String currentChannel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -151,6 +151,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void registerFirebaseListener(String username) {
+        currentChannel = username;
         if (dbListener != null) {
             db.removeEventListener(dbListener);
             db.child(FIREBASE_ROOT).child(username).addValueEventListener(dbListener);
@@ -161,6 +162,7 @@ public class MainActivity extends AppCompatActivity {
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     Vibrator mVibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
                     mVibrator.vibrate(50);
+                    animatePulse();
                 }
 
                 @Override
@@ -181,12 +183,17 @@ public class MainActivity extends AppCompatActivity {
         return new PulseCallback() {
             @Override
             public void onPulse() {
-                SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-                String username = preferences.getString(USERNAME_PREFERENCE, "");
+                String username = getUsername();
                 sendBeat(username);
                 animatePulse();
             }
         };
+    }
+
+    @NonNull
+    private String getUsername() {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        return preferences.getString(USERNAME_PREFERENCE, "");
     }
 
     private void sendBeat(String username) {
@@ -221,13 +228,20 @@ public class MainActivity extends AppCompatActivity {
             db.child(FIREBASE_ROOT).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
+                    String channelName = getCurrentChannel();
+                    int channelIndex = 0;
                     HashMap userMap = (HashMap) dataSnapshot.getValue();
                     Set keys = userMap.keySet();
-                    final ArrayAdapter arrayAdapter = new ArrayAdapter(MainActivity.this, android.R.layout.select_dialog_singlechoice);
+                    final CharSequence[] keyArray = new CharSequence[keys.size()];
+                    int i = 0;
                     for (Object key: keys) {
                         if (key instanceof String) {
-                            arrayAdapter.add(key);
+                            if (key.equals(channelName)) {
+                                channelIndex = i;
+                            }
+                            keyArray[i] = (CharSequence) key;
                         }
+                        i++;
                     }
                     AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                     builder.setIcon(ContextCompat.getDrawable(MainActivity.this, R.drawable.search_icon));
@@ -238,11 +252,12 @@ public class MainActivity extends AppCompatActivity {
                             dialog.dismiss();
                         }
                     });
-                    builder.setAdapter(arrayAdapter, new DialogInterface.OnClickListener() {
+                    builder.setSingleChoiceItems(keyArray, channelIndex, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            String channelName = (String) arrayAdapter.getItem(which);
+                            String channelName = (String) keyArray[which];
                             registerFirebaseListener(channelName);
+                            dialog.dismiss();
                         }
                     });
                     builder.create().show();
@@ -265,5 +280,9 @@ public class MainActivity extends AppCompatActivity {
         if (mCamera != null) {
             destroyCameraPreview();
         }
+    }
+
+    public String getCurrentChannel() {
+        return currentChannel;
     }
 }
