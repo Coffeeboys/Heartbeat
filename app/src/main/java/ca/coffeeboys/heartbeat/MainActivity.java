@@ -1,8 +1,11 @@
 package ca.coffeeboys.heartbeat;
 
+import android.animation.AnimatorInflater;
+import android.animation.AnimatorSet;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.content.SharedPreferences;
 import android.hardware.Camera;
 import android.os.Bundle;
@@ -37,6 +40,8 @@ public class MainActivity extends AppCompatActivity {
     private CameraPreview mPreview;
     private PulseCallback pulseCallback;
     private Camera mCamera;
+    private FloatingActionButton fab;
+    
     private String FIREBASE_ROOT = "Channels";
     private String USERNAME_PREFERENCE = "Username";
     private ValueEventListener dbListener;
@@ -90,6 +95,7 @@ public class MainActivity extends AppCompatActivity {
 
         fab.setOnTouchListener(new View.OnTouchListener() {
             boolean isPressed = false;
+
 
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -178,12 +184,20 @@ public class MainActivity extends AppCompatActivity {
                 SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
                 String username = preferences.getString(USERNAME_PREFERENCE, "");
                 sendBeat(username);
+                animatePulse();
             }
         };
     }
 
     private void sendBeat(String username) {
         db.child(FIREBASE_ROOT).child(username).setValue(Calendar.getInstance().getTimeInMillis());
+    }
+    
+    private void animatePulse() {
+        AnimatorSet set = (AnimatorSet) AnimatorInflater.loadAnimator(MainActivity.this,
+                R.animator.pulse);
+        set.setTarget(fab);
+        set.start();
     }
 
     @Override
