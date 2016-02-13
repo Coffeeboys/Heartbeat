@@ -433,7 +433,7 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
         Snackbar.make(fab, "Making NDef message", Snackbar.LENGTH_LONG).show();
         return new NdefMessage(
                 new NdefRecord[]{ NdefRecord.createMime(
-                        "text/plain", currentChannel.getBytes())
+                        "text/plain", getCurrentChannel().getBytes())
 //                        NdefRecord.createApplicationRecord("ca.coffeeboys.heartbeat")
                 });
     }
@@ -445,8 +445,8 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
         NdefMessage msg = (NdefMessage) rawMsgs[0];
         // record 0 contains the MIME type, record 1 is the AAR, if present
 //        textView.setText(new String(msg.getRecords()[0].getPayload()));
-        currentChannel = new String(msg.getRecords()[0].getPayload());
-        registerFirebaseListener(currentChannel);
-        Snackbar.make(fab, "registered to " + currentChannel + " channel", Snackbar.LENGTH_LONG).show();
+        setCurrentChannel(new String(msg.getRecords()[0].getPayload()));
+        registerFirebaseListener(getCurrentChannel());
+        Snackbar.make(fab, "registered to " + getCurrentChannel() + " channel", Snackbar.LENGTH_LONG).show();
     }
 }
