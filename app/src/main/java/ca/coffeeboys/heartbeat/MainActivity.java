@@ -86,7 +86,7 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
         soundPlayer = MediaPlayer.create(this, R.raw.heartbass);
 
         final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        String username = preferences.getString(CHANNEL_PREFERENCE, "");
+        final String username = preferences.getString(CHANNEL_PREFERENCE, "");
         if (username.equals("")) {
             final EditText input = new EditText(MainActivity.this);
             input.setInputType(InputType.TYPE_CLASS_TEXT);
@@ -96,15 +96,20 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
             dialogBuilder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    SharedPreferences.Editor editor = preferences.edit();
                     String usernameInput = input.getText().toString();
+                    if (username.equals("")) {
+                        usernameInput = "all";
+                    }
+                    SharedPreferences.Editor editor = preferences.edit();
                     editor.putString(CHANNEL_PREFERENCE, usernameInput);
                     editor.apply();
                     setupFirebase(getApplicationContext());
                     registerFirebaseListener(usernameInput);
                     pulseCallback = makePulseCallback();
+
                 }
             });
+            dialogBuilder.setCancelable(false);
             dialogBuilder.create().show();
 
 
@@ -229,6 +234,13 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
             }
         };
         db.child(FIREBASE_ROOT).child(channel).addValueEventListener(dbListener);
+    }
+
+    private void deregisterFirebaseListener() {
+        if (dbListener != null) {
+            db.child(FIREBASE_ROOT).child(getCurrentChannel()).removeEventListener(dbListener);
+            dbListener = null;
+        }
     }
 
     private void setupFirebase(Context applicationContext) {
@@ -404,6 +416,7 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
     protected void onPause() {
         super.onPause();
         destroyCameraPreview();
+        deregisterFirebaseListener();
     }
 
     public String getCurrentChannel() {
@@ -431,6 +444,7 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
             Snackbar.make(fab, "NDEF Discovered", Snackbar.LENGTH_LONG).show();
             receiveNfcIntent(getIntent());
         }
+        registerFirebaseListener(getCurrentChannel());
     }
 
     @Override
