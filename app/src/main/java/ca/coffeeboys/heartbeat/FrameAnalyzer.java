@@ -1,6 +1,7 @@
 package ca.coffeeboys.heartbeat;
 
 import android.hardware.Camera;
+import android.util.Log;
 
 import java.util.Calendar;
 
@@ -55,16 +56,11 @@ public class FrameAnalyzer implements Camera.PreviewCallback {
 
         }
 
-        //Calculate average of new image
-        /*long byteTotal = 0;
-        for (byte aData : data) {
-            byteTotal += (long) aData;
-        }
-        nextAverage = byteTotal/data.length;*/
-
         nextAverage = YUV420Decoder.decodeYUV420SPtoRedAvg(data.clone(), previewWidth, previewHeight );
-
-
+        Log.d("Heartbeat", "" + (Math.abs(nextAverage - movingAverage)));
+        if (Math.abs(nextAverage - movingAverage) < 10) {
+            pulseCallback.onDataCollected(Math.abs(nextAverage));
+        }
         boolean newBeatState = false;
         if (nextAverage < movingAverage) {
             long currentTime = Calendar.getInstance().getTimeInMillis();

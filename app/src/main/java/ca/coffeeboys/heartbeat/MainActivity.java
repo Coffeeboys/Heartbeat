@@ -6,6 +6,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.graphics.Canvas;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.os.Vibrator;
@@ -25,11 +26,22 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 
+import com.db.chart.model.ChartSet;
+import com.db.chart.model.LineSet;
+import com.db.chart.model.Point;
+import com.db.chart.view.AxisController;
+import com.db.chart.view.LineChartView;
+import com.db.chart.view.animation.Animation;
+import com.db.chart.view.animation.easing.BounceEase;
+import com.db.chart.view.animation.style.BaseStyleAnimation;
+import com.db.chart.view.animation.style.DashAnimation;
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
 import com.firebase.client.ValueEventListener;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Set;
@@ -45,6 +57,12 @@ public class MainActivity extends AppCompatActivity {
     private String USERNAME_PREFERENCE = "Username";
     private ValueEventListener dbListener;
     private String currentChannel;
+    private boolean lineChartInitialized;
+    private float[] lineChartValues;
+    private int lineChartValuesIndex;
+    private int lineChartValuesSize;
+    private float minValue;
+    private float maxDiff;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,6 +129,14 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
+
+        lineChartInitialized = false;
+        lineChartValuesSize = 50;
+        lineChartValues = new float[lineChartValuesSize];
+        lineChartValuesIndex = 0;
+        minValue = 0;
+        maxDiff = 1;
+
     }
 
     private void destroyCameraPreview() {
@@ -126,6 +152,16 @@ public class MainActivity extends AppCompatActivity {
 
             FrameLayout preview = (FrameLayout) findViewById(R.id.camera_frame);
             preview.removeView(mPreview);
+
+//            LineChartView lineChart = (LineChartView) findViewById(R.id.pulse_chart);
+//            lineChartValues.beginAt(5);
+//            lineChartValues.setThickness(3);
+//            lineChartValues.setSmooth(true);
+//            lineChart.addData(lineChartValues);
+//            lineChart.setYLabels(AxisController.LabelPosition.NONE);
+//            lineChart.setYAxis(false);
+//            lineChart.setXAxis(false);
+//            lineChart.show();
         }
     }
 
@@ -185,6 +221,12 @@ public class MainActivity extends AppCompatActivity {
     private PulseCallback makePulseCallback() {
         return new PulseCallback() {
             @Override
+            public void onDataCollected(long pulseValue) {
+//                lineChartValues.addPoint(new Point("", pulseValue));
+                updateGraph(pulseValue);
+            }
+
+            @Override
             public void onPulse() {
                 String username = getUsername();
                 sendBeat(username);
@@ -208,6 +250,58 @@ public class MainActivity extends AppCompatActivity {
                 R.animator.pulse);
         set.setTarget(fab);
         set.start();
+    }
+
+    private void updateGraph(long pulseValue) {
+        final LineChartView lineChart = (LineChartView) findViewById(R.id.pulse_chart);
+
+        if (lineChartInitialized) {
+
+            if (lineChartValuesIndex < lineChartValuesSize) {
+                lineChartValues[lineChartValuesIndex] = (pulseValue-minValue)/maxDiff;
+                lineChartValuesIndex++;
+                if (lineChartValuesIndex == 10) {
+                    float[] sortedArray = Arrays.copyOfRange(lineChartValues, 0 ,10);
+                    Arrays.sort(sortedArray);
+                    for (float currVal : sortedArray) {
+                        if (currVal > 0) {
+                            minValue = currVal;
+                            break;
+                        }
+                    }
+                    for (int i = 0; i < 10; ++i) {
+                        lineChartValues[i] -= minValue;
+                    }
+                    maxDiff = lineChartValues[9];
+//                    maxDiff*=1.3;
+                    for (int i = 0; i < 10; ++i) {
+                        lineChartValues[i] = lineChartValues[i]/maxDiff;
+                    }
+                }
+            }
+            else {
+                for(int i = 1; i < lineChartValuesSize; i++) {
+                    lineChartValues[i - 1] = lineChartValues[i];
+                }
+                lineChartValues[lineChartValuesIndex - 1] = (pulseValue-minValue)/maxDiff;
+                lineChart.updateValues(0, lineChartValues);
+                lineChart.show();
+            }
+        }
+        else {
+            String[] stringSet = new String[lineChartValuesSize];
+            Arrays.fill(stringSet, "");
+            LineSet newSet = new LineSet(stringSet, lineChartValues);
+    //            newSet.addPoint(new Point("", pulseValue));
+            newSet.setThickness(3);
+            newSet.setSmooth(true);
+            lineChart.setYLabels(AxisController.LabelPosition.NONE);
+            lineChart.setYAxis(false);
+            lineChart.setXAxis(false);
+            lineChart.addData(newSet);
+            lineChart.show();
+            lineChartInitialized = true;
+        }
     }
 
     @Override
