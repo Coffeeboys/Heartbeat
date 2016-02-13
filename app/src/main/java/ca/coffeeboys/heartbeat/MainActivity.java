@@ -2,19 +2,28 @@ package ca.coffeeboys.heartbeat;
 
 import android.animation.AnimatorInflater;
 import android.animation.AnimatorSet;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.os.Vibrator;
+import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.InputType;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 
 import com.firebase.client.DataSnapshot;
@@ -23,6 +32,8 @@ import com.firebase.client.FirebaseError;
 import com.firebase.client.ValueEventListener;
 
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
     Firebase db;
@@ -31,6 +42,10 @@ public class MainActivity extends AppCompatActivity {
     private Camera mCamera;
     private FloatingActionButton fab;
     
+    private String FIREBASE_ROOT = "Channels";
+    private String USERNAME_PREFERENCE = "Username";
+    private ValueEventListener dbListener;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,28 +53,50 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        String username = preferences.getString(USERNAME_PREFERENCE, "");
+        if (username.equals("")) {
+            final EditText input = new EditText(MainActivity.this);
+            input.setInputType(InputType.TYPE_CLASS_TEXT);
+            AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(MainActivity.this);
+            dialogBuilder.setTitle("Set Username");
+            dialogBuilder.setView(input);
+            dialogBuilder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    SharedPreferences.Editor editor = preferences.edit();
+                    String usernameInput = input.getText().toString();
+                    editor.putString(USERNAME_PREFERENCE, usernameInput);
+                    editor.apply();
+                    setupFirebase(getApplicationContext());
+                    registerFirebaseListener(usernameInput);
+                    pulseCallback = makePulseCallback();
+                }
+            });
+            dialogBuilder.create().show();
+        }
+        else {
+            //SERVER STUFF
+            setupFirebase(getApplicationContext());
+            registerFirebaseListener(username);
+            pulseCallback = makePulseCallback();
+        }
 
-        //SERVER STUFF
-        setupFirebase(getApplicationContext());
-        registerFirebaseListener(getWindow().getDecorView().getRootView());
-        pulseCallback = makePulseCallback();
-
-        //CAMERA STUFF
-//        initCameraPreview(getCameraInstance());
-
-
-        fab = (FloatingActionButton) findViewById(R.id.fab);
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                sendBeat();
+                sendBeat(preferences.getString(USERNAME_PREFERENCE, ""));
 //                Snackbar.make(view, "Send data", Snackbar.LENGTH_LONG).show();
 //                Vibrator mVibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
 //                mVibrator.vibrate(100);
             }
         });
+
         fab.setOnTouchListener(new View.OnTouchListener() {
             boolean isPressed = false;
+
+
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
@@ -67,8 +104,7 @@ public class MainActivity extends AppCompatActivity {
                     Log.d("Heartbeat", "Pressed");
                     mCamera = getCameraInstance();
                     initCameraPreview();
-                }
-                else if (event.getAction() == MotionEvent.ACTION_UP) {
+                } else if (event.getAction() == MotionEvent.ACTION_UP) {
                     isPressed = false;
                     Log.d("Heartbeat", "Not Pressed");
                     destroyCameraPreview();
@@ -115,20 +151,26 @@ public class MainActivity extends AppCompatActivity {
         preview.addView(mPreview);
     }
 
-    private void registerFirebaseListener(final View view) {
-        db.child("Beat").addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                Snackbar.make(view, "Received beat", Snackbar.LENGTH_LONG).show();
-                Vibrator mVibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-                mVibrator.vibrate(100);
-            }
+    private void registerFirebaseListener(String username) {
+        if (dbListener != null) {
+            db.removeEventListener(dbListener);
+            db.child(FIREBASE_ROOT).child(username).addValueEventListener(dbListener);
+        }
+        else {
+            dbListener = new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    Vibrator mVibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+                    mVibrator.vibrate(100);
+                }
 
-            @Override
-            public void onCancelled(FirebaseError firebaseError) {
+                @Override
+                public void onCancelled(FirebaseError firebaseError) {
 
-            }
-        });
+                }
+            };
+            db.child(FIREBASE_ROOT).child(username).addValueEventListener(dbListener);
+        }
     }
 
     private void setupFirebase(Context applicationContext) {
@@ -140,14 +182,16 @@ public class MainActivity extends AppCompatActivity {
         return new PulseCallback() {
             @Override
             public void onPulse() {
-                sendBeat();
+                SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                String username = preferences.getString(USERNAME_PREFERENCE, "");
+                sendBeat(username);
                 animatePulse();
             }
         };
     }
 
-    private void sendBeat() {
-        db.child("Beat").setValue(Calendar.getInstance().getTimeInMillis());
+    private void sendBeat(String username) {
+        db.child(FIREBASE_ROOT).child(username).setValue(Calendar.getInstance().getTimeInMillis());
     }
     
     private void animatePulse() {
@@ -172,7 +216,42 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_search) {
+            db.child(FIREBASE_ROOT).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    HashMap userMap = (HashMap) dataSnapshot.getValue();
+                    Set keys = userMap.keySet();
+                    final ArrayAdapter arrayAdapter = new ArrayAdapter(MainActivity.this, android.R.layout.select_dialog_singlechoice);
+                    for (Object key: keys) {
+                        if (key instanceof String) {
+                            arrayAdapter.add(key);
+                        }
+                    }
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                    builder.setIcon(ContextCompat.getDrawable(MainActivity.this, R.drawable.search_icon));
+                    builder.setTitle("Select a channel");
+                    builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    });
+                    builder.setAdapter(arrayAdapter, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            String channelName = (String) arrayAdapter.getItem(which);
+                            registerFirebaseListener(channelName);
+                        }
+                    });
+                    builder.create().show();
+                }
+
+                @Override
+                public void onCancelled(FirebaseError firebaseError) {
+
+                }
+            });
             return true;
         }
 
