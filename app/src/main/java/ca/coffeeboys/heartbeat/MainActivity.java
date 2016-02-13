@@ -79,6 +79,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void destroyCameraPreview() {
+        mCamera.setPreviewCallback(null);
         mCamera.stopPreview();
         mPreview.getHolder().removeCallback(mPreview);
         Camera.Parameters parameters = mCamera.getParameters();
