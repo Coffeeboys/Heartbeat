@@ -120,7 +120,7 @@ public class MainActivity extends AppCompatActivity {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Snackbar.make(view, "Received beat", Snackbar.LENGTH_LONG).show();
                 Vibrator mVibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-                mVibrator.vibrate(100);
+                mVibrator.vibrate(50);
             }
 
             @Override
@@ -147,6 +147,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void sendBeat() {
         db.child("Beat").setValue(Calendar.getInstance().getTimeInMillis());
+        Vibrator mVibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+        mVibrator.vibrate(50);
     }
     
     private void animatePulse() {

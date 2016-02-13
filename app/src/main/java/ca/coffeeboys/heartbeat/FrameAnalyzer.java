@@ -3,6 +3,8 @@ package ca.coffeeboys.heartbeat;
 import android.hardware.Camera;
 import android.util.Log;
 
+import ca.coffeeboys.heartbeat.util.YUV420Decoder;
+
 /**
  * Created by Aarjente! on 2016-02-12.
  */
@@ -51,11 +53,13 @@ public class FrameAnalyzer implements Camera.PreviewCallback {
         }
 
         //Calculate average of new image
-        long byteTotal = 0;
+        /*long byteTotal = 0;
         for (byte aData : data) {
             byteTotal += (long) aData;
         }
-        nextAverage = byteTotal/data.length;
+        nextAverage = byteTotal/data.length;*/
+
+        nextAverage = YUV420Decoder.decodeYUV420SPtoRedAvg(data.clone(), previewWidth, previewHeight );
 
 
         boolean newBeatState;
