@@ -221,14 +221,14 @@ public class MainActivity extends AppCompatActivity {
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     HashMap userMap = (HashMap) dataSnapshot.getValue();
                     Set keys = userMap.keySet();
-                    final ArrayAdapter arrayAdapter = new ArrayAdapter(getApplicationContext(), android.R.layout.select_dialog_singlechoice);
+                    final ArrayAdapter arrayAdapter = new ArrayAdapter(MainActivity.this, android.R.layout.select_dialog_singlechoice);
                     for (Object key: keys) {
                         if (key instanceof String) {
                             arrayAdapter.add(key);
                         }
                     }
-                    AlertDialog.Builder builder = new AlertDialog.Builder(getApplicationContext());
-                    builder.setIcon(ContextCompat.getDrawable(getApplicationContext(), R.drawable.search_icon));
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                    builder.setIcon(ContextCompat.getDrawable(MainActivity.this, R.drawable.search_icon));
                     builder.setTitle("Select a channel");
                     builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                         @Override
@@ -243,6 +243,7 @@ public class MainActivity extends AppCompatActivity {
                             registerFirebaseListener(channelName);
                         }
                     });
+                    builder.create().show();
                 }
 
                 @Override
