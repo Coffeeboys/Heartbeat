@@ -17,7 +17,6 @@ import android.os.Bundle;
 import android.os.Parcelable;
 import android.os.Vibrator;
 import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
@@ -444,7 +443,9 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
             Snackbar.make(fab, "NDEF Discovered", Snackbar.LENGTH_LONG).show();
             receiveNfcIntent(getIntent());
         }
-        registerFirebaseListener(getCurrentChannel());
+        if (db != null) {
+            registerFirebaseListener(getCurrentChannel());
+        }
     }
 
     @Override
