@@ -184,17 +184,22 @@ public class MainActivity extends AppCompatActivity {
         preview.addView(mPreview);
     }
 
-    private void registerFirebaseListener(String username) {
+    private void registerFirebaseListener(final String channel) {
         if (dbListener != null) {
             db.child(FIREBASE_ROOT).child(getCurrentChannel()).removeEventListener(dbListener);
         }
-        setCurrentChannel(username);
+        setCurrentChannel(channel);
         dbListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Vibrator mVibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-                mVibrator.vibrate(100);
-                animatePulse();
+                if (dataSnapshot.getValue() == null) {
+                    sendBeat(channel);
+                }
+                else {
+                    Vibrator mVibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+                    mVibrator.vibrate(100);
+                    animatePulse();
+                }
             }
 
             @Override
@@ -202,7 +207,7 @@ public class MainActivity extends AppCompatActivity {
 
             }
         };
-        db.child(FIREBASE_ROOT).child(username).addValueEventListener(dbListener);
+        db.child(FIREBASE_ROOT).child(channel).addValueEventListener(dbListener);
     }
 
     private void setupFirebase(Context applicationContext) {
