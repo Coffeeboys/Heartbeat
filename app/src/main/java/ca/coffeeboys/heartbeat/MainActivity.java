@@ -96,7 +96,7 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     String usernameInput = input.getText().toString();
-                    if (username.equals("")) {
+                    if (usernameInput.equals("")) {
                         usernameInput = "all";
                     }
                     SharedPreferences.Editor editor = preferences.edit();
@@ -191,7 +191,7 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
             camera = Camera.open();
             Camera.Parameters parameters = camera.getParameters();
             parameters.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
-           // parameters.setPreviewFormat(ImageFormat.RGB_565);
+//            parameters.setPreviewFormat(ImageFormat.RGB_565);
             camera.setParameters(parameters);
             camera.setPreviewCallback(new FrameAnalyzer(pulseCallback));
             camera.setDisplayOrientation(90);
