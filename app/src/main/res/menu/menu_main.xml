@@ -8,4 +8,10 @@
         android:title="@string/action_search"
         android:icon="@drawable/search_icon"
         app:showAsAction="always" />
+    <item
+        android:id="@+id/action_create"
+        android:orderInCategory="100"
+        android:title="@string/action_add"
+        android:icon="@drawable/add_icon"
+        app:showAsAction="ifRoom" />
 </menu>

@@ -6,7 +6,6 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
-import android.graphics.Canvas;
 import android.hardware.Camera;
 import android.media.MediaPlayer;
 import android.os.Bundle;
@@ -23,25 +22,17 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 
-import com.db.chart.model.ChartSet;
 import com.db.chart.model.LineSet;
-import com.db.chart.model.Point;
 import com.db.chart.view.AxisController;
 import com.db.chart.view.LineChartView;
-import com.db.chart.view.animation.Animation;
-import com.db.chart.view.animation.easing.BounceEase;
-import com.db.chart.view.animation.style.BaseStyleAnimation;
-import com.db.chart.view.animation.style.DashAnimation;
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
 import com.firebase.client.ValueEventListener;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -55,9 +46,8 @@ public class MainActivity extends AppCompatActivity {
     private FloatingActionButton fab;
     
     private String FIREBASE_ROOT = "Channels";
-    private String USERNAME_PREFERENCE = "Username";
+    private String CHANNEL_PREFERENCE = "Channel";
     private ValueEventListener dbListener;
-    private String currentChannel;
     private boolean lineChartInitialized;
     private float[] lineChartValues;
     private int lineChartValuesIndex;
@@ -77,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
         soundPlayer = MediaPlayer.create(this, R.raw.heartbass);
 
         final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        String username = preferences.getString(USERNAME_PREFERENCE, "");
+        String username = preferences.getString(CHANNEL_PREFERENCE, "");
         if (username.equals("")) {
             final EditText input = new EditText(MainActivity.this);
             input.setInputType(InputType.TYPE_CLASS_TEXT);
@@ -89,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
                 public void onClick(DialogInterface dialog, int which) {
                     SharedPreferences.Editor editor = preferences.edit();
                     String usernameInput = input.getText().toString();
-                    editor.putString(USERNAME_PREFERENCE, usernameInput);
+                    editor.putString(CHANNEL_PREFERENCE, usernameInput);
                     editor.apply();
                     setupFirebase(getApplicationContext());
                     registerFirebaseListener(usernameInput);
@@ -109,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                sendBeat(currentChannel);
+                sendBeat(getCurrentChannel());
 //                Snackbar.make(view, "Send data", Snackbar.LENGTH_LONG).show();
 //                Vibrator mVibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
 //                mVibrator.vibrate(100);
@@ -196,9 +186,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void registerFirebaseListener(String username) {
         if (dbListener != null) {
-            db.child(FIREBASE_ROOT).child(currentChannel).removeEventListener(dbListener);
+            db.child(FIREBASE_ROOT).child(getCurrentChannel()).removeEventListener(dbListener);
         }
-        currentChannel = username;
+        setCurrentChannel(username);
         dbListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -231,16 +221,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onPulse() {
                 soundPlayer.start();
-                sendBeat(currentChannel);
+                sendBeat(getCurrentChannel());
                 animatePulse();
             }
         };
-    }
-
-    @NonNull
-    private String getUsername() {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        return preferences.getString(USERNAME_PREFERENCE, "");
     }
 
     private void sendBeat(String username) {
@@ -369,6 +353,23 @@ public class MainActivity extends AppCompatActivity {
             });
             return true;
         }
+        else if (id == R.id.action_create) {
+            final EditText input = new EditText(MainActivity.this);
+            input.setInputType(InputType.TYPE_CLASS_TEXT);
+            AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(MainActivity.this);
+            dialogBuilder.setTitle("Create Channel");
+            dialogBuilder.setView(input);
+            dialogBuilder.setPositiveButton("Create", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    String channelName = input.getText().toString();
+                    setCurrentChannel(channelName);
+                    setupFirebase(getApplicationContext());
+                    registerFirebaseListener(channelName);
+                }
+            });
+            dialogBuilder.create().show();
+        }
 
         return super.onOptionsItemSelected(item);
     }
@@ -380,6 +381,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public String getCurrentChannel() {
-        return currentChannel;
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        return preferences.getString(CHANNEL_PREFERENCE, "");
+    }
+
+    public void setCurrentChannel(String currentChannel) {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString(CHANNEL_PREFERENCE, currentChannel);
+        editor.apply();
     }
 }
