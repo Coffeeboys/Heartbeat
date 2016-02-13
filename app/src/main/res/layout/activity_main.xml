@@ -33,7 +33,7 @@
         xmlns:chart="http://schemas.android.com/apk/res-auto"
         android:id="@+id/pulse_chart"
         android:layout_width="match_parent"
-        android:layout_height="100dp"
+        android:layout_height="@dimen/graph_height"
         android:layout_gravity="bottom"/>
 
     <android.support.design.widget.FloatingActionButton

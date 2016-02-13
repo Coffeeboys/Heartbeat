@@ -126,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         lineChartInitialized = false;
-        lineChartValuesSize = 50;
+        lineChartValuesSize = 100;
         lineChartValues = new float[lineChartValuesSize];
         lineChartValuesIndex = 0;
         minValue = 0;
@@ -242,7 +242,7 @@ public class MainActivity extends AppCompatActivity {
         final LineChartView lineChart = (LineChartView) findViewById(R.id.pulse_chart);
 
         if (lineChartInitialized) {
-
+            lineChartValuesIndex = lineChartValuesSize;
             if (lineChartValuesIndex < lineChartValuesSize) {
 //                lineChartValues[lineChartValuesIndex] = (pulseValue-minValue)/maxDiff;
                 lineChartValues[lineChartValuesIndex] = pulseValue;

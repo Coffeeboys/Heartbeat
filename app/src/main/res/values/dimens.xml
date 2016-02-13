@@ -4,4 +4,5 @@
     <dimen name="activity_vertical_margin">16dp</dimen>
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="button_size">156dp</dimen>
+    <dimen name="graph_height">60dp</dimen>
 </resources>
