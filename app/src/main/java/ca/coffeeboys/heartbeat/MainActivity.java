@@ -82,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
             pulseCallback = makePulseCallback();
         }
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -102,7 +102,6 @@ public class MainActivity extends AppCompatActivity {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     isPressed = true;
                     Log.d("Heartbeat", "Pressed");
-                    mCamera = getCameraInstance();
                     initCameraPreview();
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
                     isPressed = false;
@@ -122,7 +121,6 @@ public class MainActivity extends AppCompatActivity {
         parameters.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
         mCamera.setParameters(parameters);
         mCamera.release();
-        mCamera = null;
 
         FrameLayout preview = (FrameLayout) findViewById(R.id.camera_frame);
         preview.removeView(mPreview);
@@ -146,6 +144,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initCameraPreview() {
+        mCamera = getCameraInstance();
         mPreview = new CameraPreview(this, mCamera);
         FrameLayout preview = (FrameLayout) findViewById(R.id.camera_frame);
         preview.addView(mPreview);
@@ -256,11 +255,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
     }
 
     @Override
