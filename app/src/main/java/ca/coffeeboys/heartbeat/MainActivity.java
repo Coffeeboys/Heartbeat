@@ -45,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
     private String USERNAME_PREFERENCE = "Username";
     private ValueEventListener dbListener;
     private String currentChannel;
+    private FrameAnalyzer frameAnalyser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,6 +72,7 @@ public class MainActivity extends AppCompatActivity {
                     setupFirebase(getApplicationContext());
                     registerFirebaseListener(usernameInput);
                     pulseCallback = makePulseCallback();
+                    frameAnalyser = new FrameAnalyzer(pulseCallback);
                 }
             });
             dialogBuilder.create().show();
@@ -80,6 +82,7 @@ public class MainActivity extends AppCompatActivity {
             setupFirebase(getApplicationContext());
             registerFirebaseListener(username);
             pulseCallback = makePulseCallback();
+            frameAnalyser = new FrameAnalyzer(pulseCallback);
         }
 
         fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -115,6 +118,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void destroyCameraPreview() {
         if (mCamera != null) {
+            frameAnalyser.setEnabled(false);
             mCamera.setPreviewCallback(null);
             mCamera.stopPreview();
             mPreview.getHolder().removeCallback(mPreview);
@@ -137,7 +141,7 @@ public class MainActivity extends AppCompatActivity {
             parameters.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
            // parameters.setPreviewFormat(ImageFormat.RGB_565);
             camera.setParameters(parameters);
-            camera.setPreviewCallback(new FrameAnalyzer(pulseCallback));
+            camera.setPreviewCallback(frameAnalyser);
             camera.setDisplayOrientation(90);
         }
         catch (Exception e) {
@@ -147,6 +151,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initCameraPreview() {
+        frameAnalyser.setEnabled(true);
         mCamera = getCameraInstance();
         mPreview = new CameraPreview(this, mCamera);
         FrameLayout preview = (FrameLayout) findViewById(R.id.camera_frame);
@@ -186,9 +191,14 @@ public class MainActivity extends AppCompatActivity {
         return new PulseCallback() {
             @Override
             public void onPulse() {
-                String username = getUsername();
-                sendBeat(username);
-                animatePulse();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        String username = getUsername();
+                        sendBeat(username);
+                        animatePulse();
+                    }
+                });
             }
         };
     }
