@@ -109,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                sendBeat(preferences.getString(USERNAME_PREFERENCE, ""));
+                sendBeat(currentChannel);
 //                Snackbar.make(view, "Send data", Snackbar.LENGTH_LONG).show();
 //                Vibrator mVibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
 //                mVibrator.vibrate(100);
@@ -195,27 +195,24 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void registerFirebaseListener(String username) {
-        currentChannel = username;
         if (dbListener != null) {
-            db.removeEventListener(dbListener);
-            db.child(FIREBASE_ROOT).child(username).addValueEventListener(dbListener);
+            db.child(FIREBASE_ROOT).child(currentChannel).removeEventListener(dbListener);
         }
-        else {
-            dbListener = new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    Vibrator mVibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-                    mVibrator.vibrate(100);
-                    animatePulse();
-                }
+        currentChannel = username;
+        dbListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Vibrator mVibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+                mVibrator.vibrate(100);
+                animatePulse();
+            }
 
-                @Override
-                public void onCancelled(FirebaseError firebaseError) {
+            @Override
+            public void onCancelled(FirebaseError firebaseError) {
 
-                }
-            };
-            db.child(FIREBASE_ROOT).child(username).addValueEventListener(dbListener);
-        }
+            }
+        };
+        db.child(FIREBASE_ROOT).child(username).addValueEventListener(dbListener);
     }
 
     private void setupFirebase(Context applicationContext) {
@@ -233,9 +230,8 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onPulse() {
-                String username = getUsername();
                 soundPlayer.start();
-                sendBeat(username);
+                sendBeat(currentChannel);
                 animatePulse();
             }
         };
@@ -258,7 +254,7 @@ public class MainActivity extends AppCompatActivity {
         set.start();
     }
 
-    private void updateGraph(long pulseValue) {
+    private void updateGraph(float pulseValue) {
         final LineChartView lineChart = (LineChartView) findViewById(R.id.pulse_chart);
 
         if (lineChartInitialized) {
