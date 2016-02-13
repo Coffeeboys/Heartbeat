@@ -22,6 +22,9 @@ public class FrameAnalyzer implements Camera.PreviewCallback {
     private long lastPulseTime;
     private int pulseDelay = 200;
     private PulseCallback pulseCallback;
+    private int nonRedCount = 100;
+    private int redThreshold = 180;
+    private boolean redDetected = true;
 
 
 
@@ -60,9 +63,19 @@ public class FrameAnalyzer implements Camera.PreviewCallback {
 
         nextAverage = YUV420Decoder.decodeYUV420SPtoRedAvg(data.clone(), previewWidth, previewHeight );
         Log.d("Heartbeat", "" + (Math.abs(nextAverage - movingAverage)));
+        if (nextAverage < redThreshold) {
+            if (redDetected) {
+                pulseCallback.onPulseNotDetected();
+                redDetected = false;
+            }
+        }
+        else {
+            redDetected = true;
+        }
         /*if (Math.abs(nextAverage - movingAverage) < 10) {
             pulseCallback.onDataCollected(Math.abs(nextAverage));
         }*/
+
         boolean newBeatState = false;
         if (nextAverage < movingAverage) {
             long currentTime = Calendar.getInstance().getTimeInMillis();

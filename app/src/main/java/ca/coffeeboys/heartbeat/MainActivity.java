@@ -262,6 +262,11 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
                 sendBeat(getCurrentChannel());
                 animatePulse();
             }
+
+            @Override
+            public void onPulseNotDetected() {
+                Snackbar.make(fab, "Please place your finger on the camera", Snackbar.LENGTH_LONG).show();
+            }
         };
     }
 
