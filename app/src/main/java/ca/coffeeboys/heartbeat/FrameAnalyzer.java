@@ -53,13 +53,12 @@ public class FrameAnalyzer implements Camera.PreviewCallback {
         //Calculate average of new image
         long byteTotal = 0;
         for (byte aData : data) {
-            //byteTotal += (long) (aData * aData);
             byteTotal += (long) aData;
         }
         nextAverage = byteTotal/data.length;
 
 
-        boolean newBeatState = false;
+        boolean newBeatState;
         if (nextAverage < movingAverage) {
             pulseCallback.onPulse();
             newBeatState = true;
