@@ -5,14 +5,21 @@ import android.animation.AnimatorSet;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.hardware.Camera;
 import android.media.MediaPlayer;
+import android.nfc.NdefMessage;
+import android.nfc.NdefRecord;
+import android.nfc.NfcAdapter;
+import android.nfc.NfcEvent;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.os.Vibrator;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -22,7 +29,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 
@@ -35,7 +41,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Set;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements NfcAdapter.CreateNdefMessageCallback{
     Firebase db;
     private CameraPreview mPreview;
     private PulseCallback pulseCallback;
@@ -48,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
     private String currentChannel;
 
     private MediaPlayer soundPlayer;
+    NfcAdapter nfcAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +62,17 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        //NFC
+        nfcAdapter = NfcAdapter.getDefaultAdapter(this);
+        if (nfcAdapter == null) {
+//            Toast.makeText(this, "NFC is not available", Toast.LENGTH_LONG).show();
+//            finish();
+//            return;
+            //TODO: do some meaningful error handling
+        }
+        nfcAdapter.setNdefPushMessageCallback(this, this);
+
 
         soundPlayer = MediaPlayer.create(this, R.raw.heartbass);
 
@@ -79,6 +97,8 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
             dialogBuilder.create().show();
+
+
         }
         else {
             //SERVER STUFF
@@ -289,5 +309,42 @@ public class MainActivity extends AppCompatActivity {
 
     public String getCurrentChannel() {
         return currentChannel;
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        setIntent(intent);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Check to see that the Activity started due to an Android Beam
+        if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(getIntent().getAction())) {
+            Snackbar.make(fab, "NDEF Discovered", Snackbar.LENGTH_LONG);
+            receiveNfcIntent(getIntent());
+        }
+    }
+
+    @Override
+    public NdefMessage createNdefMessage(NfcEvent nfcEvent) {
+        Snackbar.make(fab, "Making NDef message", Snackbar.LENGTH_LONG);
+        return new NdefMessage(
+                new NdefRecord[]{ NdefRecord.createMime(
+                        "text/plain", currentChannel.getBytes())
+//                        NdefRecord.createApplicationRecord("ca.coffeeboys.heartbeat")
+                });
+    }
+
+    void receiveNfcIntent(Intent intent) {
+        Parcelable[] rawMsgs = intent.getParcelableArrayExtra(
+                NfcAdapter.EXTRA_NDEF_MESSAGES);
+        // only one message sent during the beam
+        NdefMessage msg = (NdefMessage) rawMsgs[0];
+        // record 0 contains the MIME type, record 1 is the AAR, if present
+//        textView.setText(new String(msg.getRecords()[0].getPayload()));
+        currentChannel = new String(msg.getRecords()[0].getPayload());
+        registerFirebaseListener(currentChannel);
+        Snackbar.make(fab, "registered to " + currentChannel + " channel", Snackbar.LENGTH_LONG);
     }
 }
