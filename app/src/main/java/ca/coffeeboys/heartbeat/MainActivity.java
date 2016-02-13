@@ -114,16 +114,19 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void destroyCameraPreview() {
-        mCamera.setPreviewCallback(null);
-        mCamera.stopPreview();
-        mPreview.getHolder().removeCallback(mPreview);
-        Camera.Parameters parameters = mCamera.getParameters();
-        parameters.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
-        mCamera.setParameters(parameters);
-        mCamera.release();
+        if (mCamera != null) {
+            mCamera.setPreviewCallback(null);
+            mCamera.stopPreview();
+            mPreview.getHolder().removeCallback(mPreview);
+            Camera.Parameters parameters = mCamera.getParameters();
+            parameters.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
+            mCamera.setParameters(parameters);
+            mCamera.release();
+            mCamera = null;
 
-        FrameLayout preview = (FrameLayout) findViewById(R.id.camera_frame);
-        preview.removeView(mPreview);
+            FrameLayout preview = (FrameLayout) findViewById(R.id.camera_frame);
+            preview.removeView(mPreview);
+        }
     }
 
     public Camera getCameraInstance() {
@@ -198,8 +201,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void sendBeat(String username) {
         db.child(FIREBASE_ROOT).child(username).setValue(Calendar.getInstance().getTimeInMillis());
-        Vibrator mVibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-        mVibrator.vibrate(50);
     }
     
     private void animatePulse() {
@@ -277,9 +278,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        if (mCamera != null) {
-            destroyCameraPreview();
-        }
+        destroyCameraPreview();
     }
 
     public String getCurrentChannel() {
