@@ -160,7 +160,7 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     Vibrator mVibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-                    mVibrator.vibrate(100);
+                    mVibrator.vibrate(50);
                 }
 
                 @Override
@@ -191,6 +191,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void sendBeat(String username) {
         db.child(FIREBASE_ROOT).child(username).setValue(Calendar.getInstance().getTimeInMillis());
+        Vibrator mVibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+        mVibrator.vibrate(50);
     }
     
     private void animatePulse() {
