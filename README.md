@@ -1,5 +1,4 @@
 #Heartbeat
-
 ###by Coffeeboys
 
 Track your heartbeat and broadcast it to friends via vibrations and sound.
@@ -18,3 +17,4 @@ Broadcasting is done through a Firebase server.
 Credits to:
 biodegry @ freesound.org - Audio file
 Justin Wetherell <phishman3579@gmail.com> - YUV420 Decoder
+Diogo Bernardino - WilliamChart
