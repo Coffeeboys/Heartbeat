@@ -85,7 +85,7 @@ public class FrameAnalyzer implements Camera.PreviewCallback {
 
         beatState = newBeatState;
 
-
+        pulseCallback.onDataCollected(nextAverage - 225);
 
 
         /*long byteTotal = 0;

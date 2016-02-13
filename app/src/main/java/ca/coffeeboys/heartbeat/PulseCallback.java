@@ -5,4 +5,6 @@ package ca.coffeeboys.heartbeat;
  */
 public interface PulseCallback {
     public void onPulse();
+
+    public void onDataCollected(long pulseValue);
 }

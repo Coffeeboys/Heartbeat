@@ -36,8 +36,13 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:visibility="invisible"
         android:id="@+id/camera_frame">
-
     </FrameLayout>
+
+    <ca.coffeeboys.heartbeat.view.LineGraphView
+        android:id="@+id/heart_graph"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
 
 </android.support.design.widget.CoordinatorLayout>

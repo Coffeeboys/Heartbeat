@@ -21,7 +21,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 
@@ -34,12 +33,15 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Set;
 
+import ca.coffeeboys.heartbeat.view.LineGraphView;
+
 public class MainActivity extends AppCompatActivity {
     Firebase db;
     private CameraPreview mPreview;
     private PulseCallback pulseCallback;
     private Camera mCamera;
     private FloatingActionButton fab;
+    private LineGraphView mLineGraphView;
     
     private String FIREBASE_ROOT = "Channels";
     private String USERNAME_PREFERENCE = "Username";
@@ -82,14 +84,13 @@ public class MainActivity extends AppCompatActivity {
             pulseCallback = makePulseCallback();
         }
 
+
+        mLineGraphView = (LineGraphView) findViewById(R.id.heart_graph);
         fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 sendBeat(preferences.getString(USERNAME_PREFERENCE, ""));
-//                Snackbar.make(view, "Send data", Snackbar.LENGTH_LONG).show();
-//                Vibrator mVibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-//                mVibrator.vibrate(100);
             }
         });
 
@@ -189,6 +190,11 @@ public class MainActivity extends AppCompatActivity {
                 String username = getUsername();
                 sendBeat(username);
                 animatePulse();
+            }
+
+            @Override
+            public void onDataCollected(long pulseValue) {
+                mLineGraphView.addPoint(pulseValue, System.currentTimeMillis());
             }
         };
     }
