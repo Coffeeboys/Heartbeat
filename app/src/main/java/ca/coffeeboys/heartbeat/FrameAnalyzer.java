@@ -62,7 +62,6 @@ public class FrameAnalyzer implements Camera.PreviewCallback {
         }
 
         nextAverage = YUV420Decoder.decodeYUV420SPtoRedAvg(data.clone(), previewWidth, previewHeight );
-        Log.d("Heartbeat", "" + (Math.abs(nextAverage - movingAverage)));
         if (nextAverage < redThreshold) {
             if (redDetected) {
                 pulseCallback.onPulseNotDetected();
