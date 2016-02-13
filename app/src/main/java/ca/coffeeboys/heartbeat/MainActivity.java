@@ -264,32 +264,34 @@ public class MainActivity extends AppCompatActivity {
         if (lineChartInitialized) {
 
             if (lineChartValuesIndex < lineChartValuesSize) {
-                lineChartValues[lineChartValuesIndex] = (pulseValue-minValue)/maxDiff;
+//                lineChartValues[lineChartValuesIndex] = (pulseValue-minValue)/maxDiff;
+                lineChartValues[lineChartValuesIndex] = pulseValue;
                 lineChartValuesIndex++;
-                if (lineChartValuesIndex == 10) {
-                    float[] sortedArray = Arrays.copyOfRange(lineChartValues, 0 ,10);
-                    Arrays.sort(sortedArray);
-                    for (float currVal : sortedArray) {
-                        if (currVal > 0) {
-                            minValue = currVal;
-                            break;
-                        }
-                    }
-                    for (int i = 0; i < 10; ++i) {
-                        lineChartValues[i] -= minValue;
-                    }
-                    maxDiff = lineChartValues[9];
-//                    maxDiff*=1.3;
-                    for (int i = 0; i < 10; ++i) {
-                        lineChartValues[i] = lineChartValues[i]/maxDiff;
-                    }
-                }
+//                if (lineChartValuesIndex == 10) {
+//                    float[] sortedArray = Arrays.copyOfRange(lineChartValues, 0 ,10);
+//                    Arrays.sort(sortedArray);
+//                    for (float currVal : sortedArray) {
+//                        if (currVal > 0) {
+//                            minValue = currVal;
+//                            break;
+//                        }
+//                    }
+//                    for (int i = 0; i < 10; ++i) {
+//                        lineChartValues[i] -= minValue;
+//                    }
+//                    maxDiff = lineChartValues[9];
+////                    maxDiff*=1.3;
+//                    for (int i = 0; i < 10; ++i) {
+//                        lineChartValues[i] = lineChartValues[i]/maxDiff;
+//                    }
+//                }
             }
             else {
                 for(int i = 1; i < lineChartValuesSize; i++) {
                     lineChartValues[i - 1] = lineChartValues[i];
                 }
-                lineChartValues[lineChartValuesIndex - 1] = (pulseValue-minValue)/maxDiff;
+//                lineChartValues[lineChartValuesIndex - 1] = (pulseValue-minValue)/maxDiff;
+                lineChartValues[lineChartValuesIndex - 1] = pulseValue;
                 lineChart.updateValues(0, lineChartValues);
                 lineChart.show();
             }

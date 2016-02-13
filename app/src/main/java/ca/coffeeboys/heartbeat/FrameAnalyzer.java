@@ -60,20 +60,22 @@ public class FrameAnalyzer implements Camera.PreviewCallback {
 
         nextAverage = YUV420Decoder.decodeYUV420SPtoRedAvg(data.clone(), previewWidth, previewHeight );
         Log.d("Heartbeat", "" + (Math.abs(nextAverage - movingAverage)));
-        if (Math.abs(nextAverage - movingAverage) < 10) {
+        /*if (Math.abs(nextAverage - movingAverage) < 10) {
             pulseCallback.onDataCollected(Math.abs(nextAverage));
-        }
+        }*/
         boolean newBeatState = false;
         if (nextAverage < movingAverage) {
             long currentTime = Calendar.getInstance().getTimeInMillis();
             if (currentTime - lastPulseTime > pulseDelay) {
                 pulseCallback.onPulse();
+                pulseCallback.onDataCollected((1));
                 newBeatState = true;
                 lastPulseTime = currentTime;
             }
         }
         else {
             newBeatState = false;
+            pulseCallback.onDataCollected(0);
         }
 
         movingAverageArray[movingAverageIndex] = nextAverage;
