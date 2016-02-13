@@ -8,6 +8,7 @@ import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Canvas;
 import android.hardware.Camera;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Vibrator;
 import android.preference.PreferenceManager;
@@ -64,12 +65,16 @@ public class MainActivity extends AppCompatActivity {
     private float minValue;
     private float maxDiff;
 
+    private MediaPlayer soundPlayer;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        soundPlayer = MediaPlayer.create(this, R.raw.heartbass);
 
         final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         String username = preferences.getString(USERNAME_PREFERENCE, "");
@@ -200,7 +205,7 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     Vibrator mVibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-                    mVibrator.vibrate(50);
+                    mVibrator.vibrate(100);
                     animatePulse();
                 }
 
@@ -229,6 +234,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onPulse() {
                 String username = getUsername();
+                soundPlayer.start();
                 sendBeat(username);
                 animatePulse();
             }
