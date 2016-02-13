@@ -321,14 +321,14 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
         super.onResume();
         // Check to see that the Activity started due to an Android Beam
         if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(getIntent().getAction())) {
-            Snackbar.make(fab, "NDEF Discovered", Snackbar.LENGTH_LONG);
+            Snackbar.make(fab, "NDEF Discovered", Snackbar.LENGTH_LONG).show();
             receiveNfcIntent(getIntent());
         }
     }
 
     @Override
     public NdefMessage createNdefMessage(NfcEvent nfcEvent) {
-        Snackbar.make(fab, "Making NDef message", Snackbar.LENGTH_LONG);
+        Snackbar.make(fab, "Making NDef message", Snackbar.LENGTH_LONG).show();
         return new NdefMessage(
                 new NdefRecord[]{ NdefRecord.createMime(
                         "text/plain", currentChannel.getBytes())
@@ -345,6 +345,6 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
 //        textView.setText(new String(msg.getRecords()[0].getPayload()));
         currentChannel = new String(msg.getRecords()[0].getPayload());
         registerFirebaseListener(currentChannel);
-        Snackbar.make(fab, "registered to " + currentChannel + " channel", Snackbar.LENGTH_LONG);
+        Snackbar.make(fab, "registered to " + currentChannel + " channel", Snackbar.LENGTH_LONG).show();
     }
 }
